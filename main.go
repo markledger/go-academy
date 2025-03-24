@@ -13,26 +13,27 @@ import (
 var pl = fmt.Println
 
 func main() {
+	for_while.GuessNumberGame()
 
-	pl("many eyes")
+	// pl("many eyes")
 
-	pl(stringToFloat("3.14"))
+	// pl(stringToFloat("3.14"))
 
-	pl(floatToString(3.142))
+	// pl(floatToString(3.142))
 
-	conditional()
-	stringOperations("Mark Ledger")
+	// conditional()
+	// stringOperations("Mark Ledger")
 
-	runeOperations()
+	// runeOperations()
 
-	timeOperations()
+	// timeOperations()
 
-	mathOperations()
+	// mathOperations()
 
-	convertDegreesToRadians(90)
-	printOperations()
+	// convertDegreesToRadians(90)
+	// printOperations()
 
-	for_while.LoopOperations()
+	// for_while.LoopOperations()
 }
 
 func printOperations() {

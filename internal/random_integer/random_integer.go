@@ -10,6 +10,6 @@ func GetRandomInteger(max int) int {
 	seedSeconds := time.Now().Unix()
 	rand.NewSource(seedSeconds)
 
-	return rand.Intn(max)
+	return rand.Intn(max + 1)
 
 }
