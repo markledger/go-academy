@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go_academy_course/internal/file_io"
+	"go_academy_course/internal/learn_maps"
 	"math"
 	"strconv"
 	"strings"
@@ -15,6 +16,9 @@ var pl = fmt.Println
 func main() {
 
 	file_io.AppendFile()
+
+	learn_maps.LearningMaps()
+
 	// for_while.LoopFixedArray()
 	// funcs.FuncExamples()
 	// variadic_funcs.SumUp()c
