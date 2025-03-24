@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go_academy_course/internal/array_pointers"
 	"go_academy_course/internal/pointers"
 	"math"
 	"strconv"
@@ -17,6 +18,7 @@ func main() {
 	// funcs.FuncExamples()
 	// variadic_funcs.SumUp()
 	pointers.PointersExample()
+	array_pointers.ArrayPointers()
 	// slice_operations.SliceOperations()
 
 	// pl("many eyes")
