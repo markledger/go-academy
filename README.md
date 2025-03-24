@@ -1,6 +1,18 @@
 ### Running the Application
 From the root folder run: `go run main.go `
 
+### Running the command_line package
+
+This must first be built
+
+`go build ./internal/command_line/command_line.go`
+
+which will place the executable in the project root
+
+
+`./command_line 9 7 45 89 `
+
+
 ### Tidying modules
 
 `go mod tidy`

@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go_academy_course/internal/array_pointers"
-	"go_academy_course/internal/pointers"
+	"go_academy_course/internal/file_io"
 	"math"
 	"strconv"
 	"strings"
@@ -14,11 +13,13 @@ import (
 var pl = fmt.Println
 
 func main() {
+
+	file_io.AppendFile()
 	// for_while.LoopFixedArray()
 	// funcs.FuncExamples()
-	// variadic_funcs.SumUp()
-	pointers.PointersExample()
-	array_pointers.ArrayPointers()
+	// variadic_funcs.SumUp()c
+	// pointers.PointersExample()
+	// array_pointers.ArrayPointers()
 	// slice_operations.SliceOperations()
 
 	// pl("many eyes")
