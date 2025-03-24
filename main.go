@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	array_operations "go_academy_course/internal"
 	"math"
 	"strconv"
 	"strings"
@@ -12,7 +13,9 @@ import (
 var pl = fmt.Println
 
 func main() {
-	for_while
+	// for_while.LoopFixedArray()
+
+	array_operations.ArrayOperations()
 	// pl("many eyes")
 
 	// pl(stringToFloat("3.14"))

@@ -22,6 +22,15 @@ func LoopOperations() {
 
 }
 
+func LoopArray(arraySize int) {
+	sized := []int{1, 2, 44}
+
+	for index, number := range sized {
+		pl("index:", index, "Value:", number)
+	}
+
+}
+
 func GuessNumberGame() {
 	var randomNumber int = random_integer.GetRandomInteger(10)
 	for true {
