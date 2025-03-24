@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	for_while "go_academy_course/internal/for-while"
 	"math"
 	"strconv"
 	"strings"
@@ -13,8 +12,7 @@ import (
 var pl = fmt.Println
 
 func main() {
-	for_while.GuessNumberGame()
-
+	for_while
 	// pl("many eyes")
 
 	// pl(stringToFloat("3.14"))
