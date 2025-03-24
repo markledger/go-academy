@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	for_while "go_academy_course/internal/for-while"
 	"math"
-	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -27,12 +27,12 @@ func main() {
 
 	timeOperations()
 
-	createRandomValues(5)
-
 	mathOperations()
 
 	convertDegreesToRadians(90)
 	printOperations()
+
+	for_while.LoopOperations()
 }
 
 func printOperations() {
@@ -73,16 +73,6 @@ func mathOperations() {
 	pl("Floor(9.8)= ", math.Floor(9.8))
 	pl("Max(5,6) = ", math.Max(5, 6))
 	pl("Min(7,9) = ", math.Min(7, 9))
-}
-
-func createRandomValues(howMany int) {
-	seedSeconds := time.Now().Unix()
-	rand.Seed(seedSeconds)
-
-	for i := 0; i < howMany; i++ {
-		pl("Random Number:", rand.Intn(25))
-	}
-
 }
 
 func timeOperations() {
