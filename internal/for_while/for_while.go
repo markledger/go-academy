@@ -22,7 +22,7 @@ func LoopOperations() {
 
 }
 
-func LoopArray(arraySize int) {
+func LoopFixedArray(arraySize int) {
 	sized := []int{1, 2, 44}
 
 	for index, number := range sized {

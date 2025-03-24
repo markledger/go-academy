@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	array_operations "go_academy_course/internal"
+	"go_academy_course/internal/funcs"
+	"go_academy_course/internal/variadic_funcs"
 	"math"
 	"strconv"
 	"strings"
@@ -14,8 +15,10 @@ var pl = fmt.Println
 
 func main() {
 	// for_while.LoopFixedArray()
+	funcs.FuncExamples()
+	variadic_funcs.SumUp()
+	// slice_operations.SliceOperations()
 
-	array_operations.ArrayOperations()
 	// pl("many eyes")
 
 	// pl(stringToFloat("3.14"))
