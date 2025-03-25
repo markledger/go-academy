@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go_academy_course/internal/file_io"
+	generics_example "go_academy_course/internal/generics"
 	"go_academy_course/internal/learn_maps"
 	"math"
 	"strconv"
@@ -18,6 +19,8 @@ func main() {
 	file_io.AppendFile()
 
 	learn_maps.LearningMaps()
+
+	generics_example.GenericsExample()
 
 	// for_while.LoopFixedArray()
 	// funcs.FuncExamples()
