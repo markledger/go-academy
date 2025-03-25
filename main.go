@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"go_academy_course/internal/file_io"
-	generics_example "go_academy_course/internal/generics"
+	"go_academy_course/internal/generics"
 	"go_academy_course/internal/learn_maps"
+	"go_academy_course/internal/nested_structs"
 	"go_academy_course/internal/structs"
 	"math"
 	"strconv"
@@ -21,8 +22,9 @@ func main() {
 
 	learn_maps.LearningMaps()
 
-	generics_example.GenericsExample()
+	generics.GenericsExample()
 	structs.StructsExample()
+	nested_structs.NestedStructsExample()
 
 	// for_while.LoopFixedArray()
 	// funcs.FuncExamples()

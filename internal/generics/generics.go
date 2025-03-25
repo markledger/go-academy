@@ -1,4 +1,4 @@
-package generics_example
+package generics
 
 import "fmt"
 
@@ -13,5 +13,5 @@ func getSumGen[T MyConstraint](x T, y T) T {
 }
 
 func GenericsExample() {
-	pl("55+55 = ", getSumGen(55, 55))
+	pl("Generics example: 55+55 = ", getSumGen(55, 55))
 }
