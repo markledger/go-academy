@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go_academy_course/internal/defined_types"
 	"go_academy_course/internal/file_io"
 	"go_academy_course/internal/generics"
 	"go_academy_course/internal/learn_maps"
@@ -25,7 +26,7 @@ func main() {
 	generics.GenericsExample()
 	structs.StructsExample()
 	nested_structs.NestedStructsExample()
-
+	defined_types.DefinedTypeExample()
 	// for_while.LoopFixedArray()
 	// funcs.FuncExamples()
 	// variadic_funcs.SumUp()c
