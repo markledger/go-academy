@@ -2,12 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go_academy_course/internal/defined_types"
-	"go_academy_course/internal/file_io"
-	"go_academy_course/internal/generics"
-	"go_academy_course/internal/learn_maps"
-	"go_academy_course/internal/nested_structs"
-	"go_academy_course/internal/structs"
+	"go_academy_course/internal/go_routines"
 	"math"
 	"strconv"
 	"strings"
@@ -19,14 +14,15 @@ var pl = fmt.Println
 
 func main() {
 
-	file_io.AppendFile()
+	go_routines.GoRoutines()
+	// file_io.AppendFile()
 
-	learn_maps.LearningMaps()
+	// learn_maps.LearningMaps()
 
-	generics.GenericsExample()
-	structs.StructsExample()
-	nested_structs.NestedStructsExample()
-	defined_types.DefinedTypeExample()
+	// generics.GenericsExample()
+	// structs.StructsExample()
+	// nested_structs.NestedStructsExample()
+	// defined_types.DefinedTypeExample()
 	// for_while.LoopFixedArray()
 	// funcs.FuncExamples()
 	// variadic_funcs.SumUp()c
