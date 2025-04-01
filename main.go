@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go_academy_course/internal/go_routine_banking_example"
-	"go_academy_course/internal/recursion"
+	"go_academy/internal/regex_examples"
 	"math"
 	"strconv"
 	"strings"
@@ -16,10 +15,10 @@ var pl = fmt.Println
 func main() {
 	//
 	// go_routines.GoRoutines()
+	regex_examples.RegexExamples()
+	//go_routine_banking_example.GoRoutineBankingExample()
 
-	go_routine_banking_example.GoRoutineBankingExample()
-
-	recursion.FactorialRecursionExample()
+	//recursion.FactorialRecursionExample()
 	// file_io.AppendFile()
 
 	// learn_maps.LearningMaps()

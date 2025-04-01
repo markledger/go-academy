@@ -1,3 +1,3 @@
-module go_academy_course
+module go_academy
 
 go 1.24.1
