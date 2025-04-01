@@ -56,7 +56,7 @@ func main() {
 }
 
 func printOperations() {
-	// %d : Integer
+	// x%d : Integer
 	// %c : Character
 	// %f : Float
 	// %t : Boolean
