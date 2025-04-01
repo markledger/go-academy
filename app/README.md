@@ -5,7 +5,7 @@ From the root folder run: `go run main.go `
 
 This must first be built
 
-`go build ./internal/command_line/command_line.go`
+`go build ./app/internal/command_line/command_line.go`
 
 which will place the executable in the project root
 
@@ -23,6 +23,8 @@ This project is to create a to-do app which allows users to create a list of to-
 
 A to-do item should include a description and a status of "not started", "started", or "completed". Users should be able to display a list of all to-do items including their statuses, and should be able to update a to-do item to change its status or delete it entirely. Feel free to add any additional functionality if you want.
 
+
+### Go Academy
 
 1) Basic CLI application
 - Create a command line application that uses flags to accept a to-do item adds it to an empty list of to-do items and prints the list to console
