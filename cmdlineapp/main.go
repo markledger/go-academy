@@ -30,20 +30,39 @@ func parseFileToSlice(filePath string) []string {
 		log.Fatal(err)
 	}
 
+	removeNewLine := strings.NewReplacer("\n", "")
+
 	lines := strings.Split(string(fileData), "\n")
 	for _, line := range lines {
-		data = append(data, line)
+		if line == "" {
+			continue
+		}
+		data = append(data, removeNewLine.Replace(line))
 	}
 	return data
 }
 
 func createFile(filePath string) {
-	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	_, err := os.Create(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	f.Close()
 }
+
+func appendFile(filePath string, todo string) {
+
+	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer f.Close()
+
+	if _, err := f.WriteString(todo + "\n"); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	var todoList []string
 	taskPrt := flag.String("task", "Consume double espresso", "a string")
@@ -51,9 +70,11 @@ func main() {
 
 	todoList = parseFileToSlice(filePath)
 	todoList = append(todoList, *taskPrt)
-	for _, v := range todoList {
-		pl(v)
+
+	for i, todo := range todoList {
+		pl(fmt.Sprintf("[%d]: %s", i+1, todo))
 	}
+	appendFile(filePath, *taskPrt)
 
 	//file, err := os.OpenFile(filePath, os.O_RDONLY|os.O_CREATE, 0644)
 	//if err != nil {
