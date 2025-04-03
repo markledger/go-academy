@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -16,14 +17,20 @@ import (
 var pl = fmt.Println
 var filePath = "./todo-list.txt"
 
+const CREATE = "create"
+const EDIT = "edit"
+const DELETE = "delete"
+
 var id int
 var action string
 var task string
+var validActions = []string{EDIT, CREATE, DELETE}
 
 func init() {
 	flag.IntVar(&id, "id", 0, "use in combination with the -action flag to select task to be modified")
-	flag.StringVar(&action, "action", "create", "use in combination with -id. Select action from: edit|delete ")
+	flag.StringVar(&action, "action", CREATE, "use in combination with -id. Select action from: "+EDIT+"|"+DELETE)
 	flag.StringVar(&task, "task", "example task to complete", "the task you want to create, or the new task if editing")
+	flag.Parse()
 }
 
 func parseFileToSlice(filePath string) []string {
@@ -74,17 +81,30 @@ func appendFile(filePath string, todo string) {
 
 func main() {
 	var todoList []string
-	flag.Parse()
-
 	todoList = parseFileToSlice(filePath)
+	if id < 1 || id > len(todoList) && action != CREATE {
+		pl(fmt.Errorf("Invalid id selected. Please select an id between 1 and %d", len(todoList)))
+		os.Exit(1)
+	}
+	if !slices.Contains(validActions, action) {
+		pl(fmt.Errorf("Invalid action selected. Please select from: create, edit or delete"))
+		os.Exit(1)
+	}
+
 	todoList = append(todoList, task)
-	pl(action)
-	pl(id)
-	pl(task)
 	pl("id | Task")
 
+	if id > 0 && id < len(todoList) && action == "edit" {
+
+	}
+	if id > 0 && id < len(todoList) && action == "delete" {
+
+	}
 	for i, todo := range todoList {
 		pl(fmt.Sprintf("[%d]: %s", i+1, todo))
 	}
-	appendFile(filePath, task)
+
+	if task == "create" {
+		appendFile(filePath, task)
+	}
 }
