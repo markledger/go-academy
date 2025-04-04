@@ -15,8 +15,8 @@ import (
 // - When the application starts, load all to-do items from disk before adding new item
 // - Allow the user to update the description of a to-do item or delete it
 var pl = fmt.Println
-var filePath = "./todo-list.txt"
 
+const FILE_PATH = "./todo-list.txt"
 const CREATE = "create"
 const EDIT = "edit"
 const DELETE = "delete"
@@ -66,22 +66,37 @@ func createFile(filePath string) {
 	}
 }
 
-func appendFile(filePath string, todo string) {
+func deleteFile(filePath string) {
+	err := os.Remove(filePath) //remove the file
+	if err != nil {
+		pl("Error: ", err) //print the error if file is not removed
+		return
+	}
+	pl(FILE_PATH + " deleted")
+}
 
+func updateFile(filePath string, todoList []string) {
+	if len(todoList) == 0 {
+		deleteFile(FILE_PATH)
+		return
+	}
 	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
-
-	if _, err := f.WriteString(todo + "\n"); err != nil {
-		log.Fatal(err)
+	for _, todo := range todoList {
+		if _, err := f.WriteString(todo + "\n"); err != nil {
+			log.Fatal(err)
+		}
 	}
+
 }
 
 func main() {
 	var todoList []string
-	todoList = parseFileToSlice(filePath)
+
+	todoList = parseFileToSlice(FILE_PATH)
 	if id < 1 || id > len(todoList) && action != CREATE {
 		pl(fmt.Errorf("Invalid id selected. Please select an id between 1 and %d", len(todoList)))
 		os.Exit(1)
@@ -91,20 +106,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	todoList = append(todoList, task)
-	pl("id | Task")
-
 	if id > 0 && id < len(todoList) && action == "edit" {
-
+		todoList[id-1] = task
 	}
 	if id > 0 && id < len(todoList) && action == "delete" {
+		todoList = append(todoList[:id-1], todoList[id+1:]...)
 
 	}
+	if action == "create" {
+		todoList = append(todoList, task)
+	}
+
+	pl("id | Task")
+
 	for i, todo := range todoList {
 		pl(fmt.Sprintf("[%d]: %s", i+1, todo))
 	}
 
-	if task == "create" {
-		appendFile(filePath, task)
-	}
+	updateFile(FILE_PATH, todoList)
 }
