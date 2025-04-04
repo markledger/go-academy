@@ -1,16 +1,22 @@
-### Running the Application
-From the root folder run: `go run main.go `
+## Building the CLI app
+From the `cmdlineapp` folder run: `go build main.go ` which will create the executable: `main`
 
-### Running the command_line package
+## Running the CLI app
 
-This must first be built
+### Create a task:
+`./main   -task="Eat jerk chicken more often" `
 
-`go build ./app/internal/command_line/command_line.go`
+or you can explicitly include the action flag:
 
-which will place the executable in the project root
+`./main  -action=create  -task="Eat jerk chicken more often"`
+
+### Edit a task:
+`./main -id=1 -action=edit -task="Eat spicy chicken more often" `
 
 
-`./command_line 9 7 45 89 `
+### Delete a task:
+`./main -id=1 -action=delete`
+
 
 
 ### Tidying modules

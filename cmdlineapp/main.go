@@ -10,55 +10,74 @@ import (
 	"strings"
 )
 
-// - Create a command line application that uses flags to accept a to-do item adds it to an empty list of to-do items and prints the list to console
-// - After printing the list of to-do items, save them to a file on disk
-// - When the application starts, load all to-do items from disk before adding new item
-// - Allow the user to update the description of a to-do item or delete it
-var pl = fmt.Println
-var filePath = "./todo-list.txt"
-
-const CREATE = "create"
-const EDIT = "edit"
-const DELETE = "delete"
+const FilePath = "./todo-list.txt"
+const CreateAction = "create"
+const EditAction = "edit"
+const DeleteAction = "delete"
 
 var id int
 var action string
 var task string
-var validActions = []string{EDIT, CREATE, DELETE}
+var validActions = []string{EditAction, CreateAction, DeleteAction}
 
+/*
+*
+Setup for the program
+
+- Create the file to store tasks if it doesn't exist
+- Declare and parse the flags
+*/
 func init() {
+
+	_, err := os.Stat(FilePath)
+	if errors.Is(err, os.ErrNotExist) {
+		createFile(FilePath)
+	}
+
 	flag.IntVar(&id, "id", 0, "use in combination with the -action flag to select task to be modified")
-	flag.StringVar(&action, "action", CREATE, "use in combination with -id. Select action from: "+EDIT+"|"+DELETE)
+	flag.StringVar(&action, "action", CreateAction, "use in combination with -id. Select action from: "+EditAction+"|"+DeleteAction)
 	flag.StringVar(&task, "task", "example task to complete", "the task you want to create, or the new task if editing")
 	flag.Parse()
 }
 
-func parseFileToSlice(filePath string) []string {
-	var data []string
-
-	_, err := os.Stat(filePath)
-	if errors.Is(err, os.ErrNotExist) {
-		pl("File doesn't exist - It will be created.")
-		createFile(filePath)
+func main() {
+	var todoList []string
+	todoList = parseFileToSlice(FilePath)
+	errors := validateFlags(len(todoList))
+	if errors != nil {
+		log.Fatal(errors)
 	}
 
+	todoList = handleAction(todoList)
+	listCurrentTasks(todoList)
+	updateFile(FilePath, todoList)
+}
+
+/*
+*
+Parse the file located at filePath and split on new lines storing each line as a
+a task in the data slice.
+*/
+func parseFileToSlice(filePath string) []string {
+	var data []string
 	fileData, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	removeNewLine := strings.NewReplacer("\n", "")
-
-	lines := strings.Split(string(fileData), "\n")
-	for _, line := range lines {
+	for _, line := range strings.Split(string(fileData), "\n") {
 		if line == "" {
 			continue
 		}
-		data = append(data, removeNewLine.Replace(line))
+		data = append(data, line)
 	}
 	return data
 }
 
+/*
+*
+Create a file at the location provided in filePath
+*/
 func createFile(filePath string) {
 	_, err := os.Create(filePath)
 	if err != nil {
@@ -66,45 +85,74 @@ func createFile(filePath string) {
 	}
 }
 
-func appendFile(filePath string, todo string) {
+/*
+*
+Delete the file if a file exists at the filePath location
+*/
+func deleteFile(filePath string) {
+	err := os.Remove(filePath) //remove the file
+	if err != nil {
+		fmt.Println("Error: ", err) //print the error if file is not removed
+		return
+	}
+	fmt.Println(FilePath + " deleted")
+}
 
-	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY, 0644)
+func updateFile(filePath string, todoList []string) {
+
+	if len(todoList) == 0 {
+		deleteFile(FilePath)
+		return
+	}
+	createFile(filePath)
+	f, err := os.OpenFile(filePath, os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
+	for _, todo := range todoList {
+		if _, err := f.WriteString(todo + "\n"); err != nil {
+			log.Fatal(err)
+		}
+	}
 
-	if _, err := f.WriteString(todo + "\n"); err != nil {
-		log.Fatal(err)
+}
+
+func listCurrentTasks(todoList []string) {
+	fmt.Println("id | Task")
+
+	for i, todo := range todoList {
+		fmt.Println(fmt.Sprintf("[%d]: %s", i+1, todo))
 	}
 }
 
-func main() {
-	var todoList []string
-	todoList = parseFileToSlice(filePath)
-	if id < 1 || id > len(todoList) && action != CREATE {
-		pl(fmt.Errorf("Invalid id selected. Please select an id between 1 and %d", len(todoList)))
-		os.Exit(1)
+func validateFlags(numberOfTasks int) error {
+	invalidId := (id < 1 || id > numberOfTasks) && action != CreateAction
+	invalidAction := !slices.Contains(validActions, action)
+	if invalidId {
+		return errors.New(fmt.Sprintf("Invalid id selected. Please select an id between 1 and %d", numberOfTasks))
 	}
-	if !slices.Contains(validActions, action) {
-		pl(fmt.Errorf("Invalid action selected. Please select from: create, edit or delete"))
-		os.Exit(1)
+	if invalidAction {
+		return errors.New("Invalid action selected. Please select from: " + CreateAction + ", " + EditAction + "or " + DeleteAction)
 	}
 
-	todoList = append(todoList, task)
-	pl("id | Task")
+	return nil
+}
 
-	if id > 0 && id < len(todoList) && action == "edit" {
-
-	}
-	if id > 0 && id < len(todoList) && action == "delete" {
-
-	}
-	for i, todo := range todoList {
-		pl(fmt.Sprintf("[%d]: %s", i+1, todo))
+/*
+Handle either creating, editing or deleting a task and return the updated todoList
+*/
+func handleAction(todoList []string) []string {
+	if action == "edit" {
+		todoList[id-1] = task
 	}
 
-	if task == "create" {
-		appendFile(filePath, task)
+	if action == "delete" {
+		todoList = append(todoList[:id-1], todoList[id:]...)
 	}
+
+	if action == "create" {
+		todoList = append(todoList, task)
+	}
+	return todoList
 }
