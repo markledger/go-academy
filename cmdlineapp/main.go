@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"slices"
+	"strings"
 )
 
 const CreateAction = "create"
@@ -41,7 +42,7 @@ func init() {
 func main() {
 	var todoList []string
 
-	todoList, err := filestore.ParseFileToSlice()
+	todoList, err := filestore.ParseFileToSlice(filestore.FilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,12 +52,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	todoList = handleAction(todoList)
-	listCurrentTasks(todoList)
+	todoList, err = handleAction(todoList)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	err = filestore.WriteFile(todoList)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	listCurrentTasks(todoList)
 }
 
 func listCurrentTasks(todoList []string) {
@@ -71,6 +77,7 @@ func validateFlags(numberOfTasks int) error {
 	var errorMsg string
 	invalidId := (id < 1 || id > numberOfTasks) && action != CreateAction
 	invalidAction := !slices.Contains(validActions, action)
+	emptyTask := len(strings.TrimSpace(task)) == 0
 
 	if invalidId {
 		errorMsg = fmt.Sprintf("Invalid id selected. Please select an id between 1 and %d", numberOfTasks)
@@ -81,13 +88,18 @@ func validateFlags(numberOfTasks int) error {
 		return errors.New(errorMsg)
 	}
 
+	if emptyTask && action != DeleteAction {
+		return errors.New("Please enter a task")
+	}
 	return nil
 }
 
 /*
 Handle either creating, editing or deleting a task and return the updated todoList
 */
-func handleAction(todoList []string) []string {
+func handleAction(todoList []string) ([]string, error) {
+	var err error = nil
+
 	if action == "edit" {
 		todoList[id-1] = task
 	}
@@ -99,5 +111,5 @@ func handleAction(todoList []string) []string {
 	if action == "create" {
 		todoList = append(todoList, task)
 	}
-	return todoList
+	return todoList, err
 }

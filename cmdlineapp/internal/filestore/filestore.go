@@ -14,9 +14,9 @@ const FilePath = "./internal/filestore/database.txt"
 Parse the file located at filePath and split on new lines storing each line as a
 a task in the data slice.
 */
-func ParseFileToSlice() ([]string, error) {
+func ParseFileToSlice(filePath string) ([]string, error) {
 	var data []string
-	fileData, err := os.ReadFile(FilePath)
+	fileData, err := os.ReadFile(filePath)
 	if err != nil {
 		return data, err
 	}
