@@ -43,14 +43,25 @@ func init() {
 func main() {
 	var todoList []string
 	todoList = parseFileToSlice(FilePath)
-	errors := validateFlags(len(todoList))
-	if errors != nil {
-		log.Fatal(errors)
+	err := validateFlags(len(todoList))
+	if err != nil {
+		logError(err)
 	}
 
 	todoList = handleAction(todoList)
 	listCurrentTasks(todoList)
 	updateFile(FilePath, todoList)
+}
+
+func logError(errorMessage error) {
+	f, err := os.OpenFile("error.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+
+	log.SetOutput(f)
+	log.Println(errorMessage)
 }
 
 /*
@@ -62,7 +73,7 @@ func parseFileToSlice(filePath string) []string {
 	var data []string
 	fileData, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Fatal(err)
+		logError(err)
 	}
 
 	for _, line := range strings.Split(string(fileData), "\n") {
@@ -81,7 +92,7 @@ Create a file at the location provided in filePath
 func createFile(filePath string) {
 	_, err := os.Create(filePath)
 	if err != nil {
-		log.Fatal(err)
+		logError(err)
 	}
 }
 
@@ -92,7 +103,7 @@ Delete the file if a file exists at the filePath location
 func deleteFile(filePath string) {
 	err := os.Remove(filePath) //remove the file
 	if err != nil {
-		fmt.Println("Error: ", err) //print the error if file is not removed
+		logError(err)
 		return
 	}
 	fmt.Println(FilePath + " deleted")
@@ -127,13 +138,19 @@ func listCurrentTasks(todoList []string) {
 }
 
 func validateFlags(numberOfTasks int) error {
+	var errorMsg string
 	invalidId := (id < 1 || id > numberOfTasks) && action != CreateAction
 	invalidAction := !slices.Contains(validActions, action)
+
 	if invalidId {
-		return errors.New(fmt.Sprintf("Invalid id selected. Please select an id between 1 and %d", numberOfTasks))
+		errorMsg = fmt.Sprintf("Invalid id selected. Please select an id between 1 and %d", numberOfTasks)
+		log.Fatal(errorMsg)
+		return errors.New(errorMsg)
 	}
 	if invalidAction {
-		return errors.New("Invalid action selected. Please select from: " + CreateAction + ", " + EditAction + "or " + DeleteAction)
+		errorMsg = "Invalid action selected. Please select from: " + CreateAction + ", " + EditAction + "or " + DeleteAction
+		log.Fatal(errorMsg)
+		return errors.New(errorMsg)
 	}
 
 	return nil
