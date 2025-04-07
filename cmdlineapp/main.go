@@ -42,10 +42,15 @@ func init() {
 
 func main() {
 	var todoList []string
-	todoList = parseFileToSlice(FilePath)
-	err := validateFlags(len(todoList))
+
+	todoList, err := parseFileToSlice(FilePath)
 	if err != nil {
-		logError(err)
+		logError(err, true)
+	}
+
+	err = validateFlags(len(todoList))
+	if err != nil {
+		logError(err, true)
 	}
 
 	todoList = handleAction(todoList)
@@ -53,15 +58,19 @@ func main() {
 	updateFile(FilePath, todoList)
 }
 
-func logError(errorMessage error) {
+func logger(errorMessage error, isFatal bool) {
 	f, err := os.OpenFile("error.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
 	defer f.Close()
 
-	log.SetOutput(f)
 	log.Println(errorMessage)
+	log.SetOutput(f)
+	if isFatal {
+		log.Fatal(errorMessage)
+	}
+
 }
 
 /*
@@ -69,11 +78,11 @@ func logError(errorMessage error) {
 Parse the file located at filePath and split on new lines storing each line as a
 a task in the data slice.
 */
-func parseFileToSlice(filePath string) []string {
+func parseFileToSlice(filePath string) ([]string, error) {
 	var data []string
 	fileData, err := os.ReadFile(filePath)
 	if err != nil {
-		logError(err)
+		return data, err
 	}
 
 	for _, line := range strings.Split(string(fileData), "\n") {
@@ -82,18 +91,19 @@ func parseFileToSlice(filePath string) []string {
 		}
 		data = append(data, line)
 	}
-	return data
+	return data, nil
 }
 
 /*
 *
 Create a file at the location provided in filePath
 */
-func createFile(filePath string) {
+func createFile(filePath string) error {
 	_, err := os.Create(filePath)
 	if err != nil {
-		logError(err)
+		return err
 	}
+	return nil
 }
 
 /*
@@ -103,7 +113,7 @@ Delete the file if a file exists at the filePath location
 func deleteFile(filePath string) {
 	err := os.Remove(filePath) //remove the file
 	if err != nil {
-		logError(err)
+		logError(err, true)
 		return
 	}
 	fmt.Println(FilePath + " deleted")
@@ -115,15 +125,18 @@ func updateFile(filePath string, todoList []string) {
 		deleteFile(FilePath)
 		return
 	}
-	createFile(filePath)
-	f, err := os.OpenFile(filePath, os.O_TRUNC|os.O_WRONLY, 0644)
+	err := createFile(filePath)
 	if err != nil {
-		log.Fatal(err)
+		logError(err, true)
+	}
+	f, fileError := os.OpenFile(filePath, os.O_TRUNC|os.O_WRONLY, 0644)
+	if fileError != nil {
+		logError(fileError, true)
 	}
 	defer f.Close()
 	for _, todo := range todoList {
 		if _, err := f.WriteString(todo + "\n"); err != nil {
-			log.Fatal(err)
+			logError(err, true)
 		}
 	}
 
@@ -144,12 +157,10 @@ func validateFlags(numberOfTasks int) error {
 
 	if invalidId {
 		errorMsg = fmt.Sprintf("Invalid id selected. Please select an id between 1 and %d", numberOfTasks)
-		log.Fatal(errorMsg)
 		return errors.New(errorMsg)
 	}
 	if invalidAction {
 		errorMsg = "Invalid action selected. Please select from: " + CreateAction + ", " + EditAction + "or " + DeleteAction
-		log.Fatal(errorMsg)
 		return errors.New(errorMsg)
 	}
 
