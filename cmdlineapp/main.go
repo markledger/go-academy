@@ -1,16 +1,14 @@
 package main
 
 import (
+	"cmdlineapp/internal/filestore"
 	"errors"
 	"flag"
 	"fmt"
 	"log"
-	"os"
 	"slices"
-	"strings"
 )
 
-const FilePath = "./todo-list.txt"
 const CreateAction = "create"
 const EditAction = "edit"
 const DeleteAction = "delete"
@@ -29,9 +27,9 @@ Setup for the program
 */
 func init() {
 
-	_, err := os.Stat(FilePath)
-	if errors.Is(err, os.ErrNotExist) {
-		createFile(FilePath)
+	err := filestore.CreateFile()
+	if err != nil {
+		log.Fatal("unable to create file to persist todo tasks")
 	}
 
 	flag.IntVar(&id, "id", 0, "use in combination with the -action flag to select task to be modified")
@@ -43,103 +41,22 @@ func init() {
 func main() {
 	var todoList []string
 
-	todoList, err := parseFileToSlice(FilePath)
+	todoList, err := filestore.ParseFileToSlice()
 	if err != nil {
-		logError(err, true)
+		log.Fatal(err)
 	}
 
 	err = validateFlags(len(todoList))
 	if err != nil {
-		logError(err, true)
+		log.Fatal(err)
 	}
 
 	todoList = handleAction(todoList)
 	listCurrentTasks(todoList)
-	updateFile(FilePath, todoList)
-}
-
-func logger(errorMessage error, isFatal bool) {
-	f, err := os.OpenFile("error.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	err = filestore.WriteFile(todoList)
 	if err != nil {
-		log.Fatalf("error opening file: %v", err)
+		log.Fatal(err)
 	}
-	defer f.Close()
-
-	log.Println(errorMessage)
-	log.SetOutput(f)
-	if isFatal {
-		log.Fatal(errorMessage)
-	}
-
-}
-
-/*
-*
-Parse the file located at filePath and split on new lines storing each line as a
-a task in the data slice.
-*/
-func parseFileToSlice(filePath string) ([]string, error) {
-	var data []string
-	fileData, err := os.ReadFile(filePath)
-	if err != nil {
-		return data, err
-	}
-
-	for _, line := range strings.Split(string(fileData), "\n") {
-		if line == "" {
-			continue
-		}
-		data = append(data, line)
-	}
-	return data, nil
-}
-
-/*
-*
-Create a file at the location provided in filePath
-*/
-func createFile(filePath string) error {
-	_, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-/*
-*
-Delete the file if a file exists at the filePath location
-*/
-func deleteFile(filePath string) {
-	err := os.Remove(filePath) //remove the file
-	if err != nil {
-		logError(err, true)
-		return
-	}
-	fmt.Println(FilePath + " deleted")
-}
-
-func updateFile(filePath string, todoList []string) {
-
-	if len(todoList) == 0 {
-		deleteFile(FilePath)
-		return
-	}
-	err := createFile(filePath)
-	if err != nil {
-		logError(err, true)
-	}
-	f, fileError := os.OpenFile(filePath, os.O_TRUNC|os.O_WRONLY, 0644)
-	if fileError != nil {
-		logError(fileError, true)
-	}
-	defer f.Close()
-	for _, todo := range todoList {
-		if _, err := f.WriteString(todo + "\n"); err != nil {
-			logError(err, true)
-		}
-	}
-
 }
 
 func listCurrentTasks(todoList []string) {
