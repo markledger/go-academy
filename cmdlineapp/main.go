@@ -26,7 +26,7 @@ Setup for the program
 - Create the file to store tasks if it doesn't exist
 - Declare and parse the flags
 */
-func setup() {
+func Init() {
 
 	err := filestore.CreateFile()
 	if err != nil {
@@ -40,7 +40,7 @@ func setup() {
 }
 
 func main() {
-	setup()
+	Init()
 	var todoList []string
 
 	todoList, err := filestore.ParseFileToSlice(filestore.FilePath)
