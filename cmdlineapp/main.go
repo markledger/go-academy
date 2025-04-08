@@ -20,7 +20,6 @@ var task string
 var validActions = []string{EditAction, CreateAction, DeleteAction}
 
 /*
-*
 Setup for the program
 
 - Create the file to store tasks if it doesn't exist
@@ -53,10 +52,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	todoList, err = handleAction(todoList)
-	if err != nil {
-		log.Fatal(err)
-	}
+	todoList = handleAction(todoList)
 
 	err = filestore.WriteFile(todoList)
 	if err != nil {
@@ -99,8 +95,7 @@ func validateFlags(numberOfTasks int) error {
 /*
 Handle either creating, editing or deleting a task and return the updated todoList
 */
-func handleAction(todoList []string) ([]string, error) {
-	var err error = nil
+func handleAction(todoList []string) []string {
 
 	if action == "edit" {
 		todoList[id-1] = task
@@ -113,5 +108,5 @@ func handleAction(todoList []string) ([]string, error) {
 	if action == "create" {
 		todoList = append(todoList, task)
 	}
-	return todoList, err
+	return todoList
 }

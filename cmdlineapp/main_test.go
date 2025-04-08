@@ -94,7 +94,7 @@ func TestHandleDeleteAction(t *testing.T) {
 	action = "delete"
 	id = 2
 
-	updatedTodoList, _ := handleAction(todoList)
+	updatedTodoList := handleAction(todoList)
 
 	if len(updatedTodoList) != 2 {
 		t.Error()
@@ -116,7 +116,7 @@ func TestHandleEditAction(t *testing.T) {
 	id = 2
 	task = "Beat the Borg"
 
-	updatedTodoList, _ := handleAction(todoList)
+	updatedTodoList := handleAction(todoList)
 
 	if len(updatedTodoList) != 3 {
 		t.Error()
@@ -141,7 +141,7 @@ func TestHandleCreateAction(t *testing.T) {
 
 	action = "create"
 	task = "Run away"
-	appendedTodoList, err := handleAction(todoList)
+	appendedTodoList := handleAction(todoList)
 	if len(appendedTodoList) != 4 {
 		t.Error("There should be 4 elements in the slice")
 	}
@@ -161,7 +161,4 @@ func TestHandleCreateAction(t *testing.T) {
 		t.Error()
 	}
 
-	if err != nil {
-		t.Error()
-	}
 }
