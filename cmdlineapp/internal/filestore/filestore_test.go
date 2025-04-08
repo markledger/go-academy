@@ -12,7 +12,7 @@ func TestFileIsParsedToSlice(t *testing.T) {
 	}
 
 	if len(data) != 3 {
-		t.Error("Includes empty values")
+		t.Error("Incorrect length")
 	}
 
 	if data[0] != "Fish and Chips" {

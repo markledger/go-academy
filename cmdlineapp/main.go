@@ -26,7 +26,7 @@ Setup for the program
 - Create the file to store tasks if it doesn't exist
 - Declare and parse the flags
 */
-func init() {
+func setup() {
 
 	err := filestore.CreateFile()
 	if err != nil {
@@ -40,6 +40,7 @@ func init() {
 }
 
 func main() {
+	setup()
 	var todoList []string
 
 	todoList, err := filestore.ParseFileToSlice(filestore.FilePath)
@@ -83,6 +84,7 @@ func validateFlags(numberOfTasks int) error {
 		errorMsg = fmt.Sprintf("Invalid id selected. Please select an id between 1 and %d", numberOfTasks)
 		return errors.New(errorMsg)
 	}
+
 	if invalidAction {
 		errorMsg = "Invalid action selected. Please select from: " + CreateAction + ", " + EditAction + "or " + DeleteAction
 		return errors.New(errorMsg)
