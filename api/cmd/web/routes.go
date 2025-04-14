@@ -12,7 +12,7 @@ func routes() http.Handler {
 	mux.Get("/tasks", handlers.ListAllTasks)
 	mux.Post("/task", handlers.CreateTask)
 
-	mux.Get("/task/:id", handlers.GetTask)
+	mux.Get("/task/{id}", handlers.GetTask)
 	mux.Patch("/task/:id", handlers.UpdateTask)
 	mux.Delete("/task/:id", handlers.DeleteTask)
 

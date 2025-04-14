@@ -32,7 +32,6 @@ func ParseFileToSlice(filePath string) ([]models.Task, error) {
 }
 
 /*
-*
 Create a file at the location provided in filePath
 */
 func CreateFile() error {
@@ -82,7 +81,7 @@ func WriteFile(todoList []models.Task) error {
 	defer f.Close()
 	for _, todo := range todoList {
 		taskName := string(todo.Name)
-		if _, err := f.WriteString(taskName); err != nil {
+		if _, err := f.WriteString(taskName + "\n"); err != nil {
 			return err
 		}
 	}
