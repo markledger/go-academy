@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"api/internal/filestore"
 	"api/internal/models"
 	"encoding/json"
 	"log"
@@ -18,14 +19,25 @@ type jsonResponsePlaceholder struct {
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	var t models.Task
-	err := decoder.Decode(&t)
+	var task models.Task
+	err := decoder.Decode(&task)
 	if err != nil {
 		panic(err)
 	}
-	t.Id = 3
+
+	taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	taskList = append(taskList, models.Task{Name: task.Name})
+	err = filestore.WriteFile(taskList)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	taskResponse := &jsonResponse{
-		Data: []models.Task{t},
+		Data: []models.Task{task},
 	}
 
 	out, err := json.MarshalIndent(taskResponse, "", "     ")
@@ -39,11 +51,12 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 
 func ListAllTasks(w http.ResponseWriter, r *http.Request) {
 
-	task1 := models.Task{Id: 1, Name: "Make it so"}
-	task2 := models.Task{Id: 2, Name: "Destroy The Dominion"}
-
+	taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
 	taskResponse := &jsonResponse{
-		Data: []models.Task{task1, task2},
+		Data: taskList,
 	}
 
 	out, err := json.MarshalIndent(taskResponse, "", "     ")
