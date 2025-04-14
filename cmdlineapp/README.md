@@ -54,7 +54,7 @@ A to-do item should include a description and a status of "not started", "starte
 - Use Parallel tests to validate that the solution is concurrent safe
 
 Further work:
-These tasks are designed to provide you with exercises beyond the end of the the academy course and are more complicated/involved, with less explanation as to how to execute them:
+These tasks are designed to provide you with exercises beyond the end of the academy course and are more complicated/involved, with less explanation as to how to execute them:
 
 - Repl (Read-eval-print loop)
 When the application runs it should ask the user to input text into the console to create, read, update, or delete list items in a loop.
