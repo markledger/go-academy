@@ -62,8 +62,13 @@ func main() {
 	listCurrentTasks(todoList)
 }
 
+/*
+*
+Print a list of the current tasks with a header row naming both columns
+as id | task
+*/
 func listCurrentTasks(todoList []string) {
-	fmt.Println("id | Task")
+	fmt.Println("id | task")
 
 	for i, todo := range todoList {
 		fmt.Println(fmt.Sprintf("[%d]: %s", i+1, todo))
