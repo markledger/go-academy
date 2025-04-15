@@ -4,7 +4,6 @@ import (
 	"api/internal/filestore"
 	"api/internal/models"
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
 	"strconv"
@@ -87,6 +86,11 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 			}
 			break
 		}
+	}
+
+	if taskResponse == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
 	}
 
 	out, err := json.MarshalIndent(taskResponse, "", "     ")
@@ -187,6 +191,6 @@ func extractBody(w http.ResponseWriter, r *http.Request) (models.Task, error) {
 }
 
 func extractIdRouteParam(w http.ResponseWriter, r *http.Request) (int, error) {
-	idString := chi.URLParam(r, "id")
+	idString := r.PathValue("id")
 	return strconv.Atoi(idString)
 }

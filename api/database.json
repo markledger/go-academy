@@ -1,7 +1,7 @@
 [
 	{
 		"ID": 1,
-		"Name": "Remove the mines"
+		"Name": "Remove the mines and add self replicators"
 	},
 	{
 		"ID": 3,
@@ -12,7 +12,7 @@
 		"Name": "Follow the Prime Directive"
 	},
 	{
-		"ID": 6,
-		"Name": "Engage at warp 9.7"
+		"ID": 7,
+		"Name": "Engage at warp 9.95"
 	}
 ]
