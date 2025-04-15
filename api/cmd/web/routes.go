@@ -5,8 +5,8 @@ import (
 	"net/http"
 )
 
-func routes() http.Handler {
-	mux := http.NewServeMux()
+func routes(mux *http.ServeMux) http.Handler {
+
 	mux.HandleFunc("GET /tasks", handlers.ListAllTasks)
 	mux.HandleFunc("POST /task", handlers.CreateTask)
 	mux.HandleFunc("GET /task/{id}", handlers.GetTask)
