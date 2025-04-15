@@ -2,13 +2,14 @@ package filestore
 
 import (
 	"api/internal/models"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
-	"strings"
 )
 
-const FilePath = "./internal/filestore/database.txt"
+const FilePath = "database.json"
 
 /*
 *
@@ -17,17 +18,25 @@ a task in the data slice.
 */
 func ParseFileToSlice(filePath string) ([]models.Task, error) {
 	var data []models.Task
-	fileData, err := os.ReadFile(filePath)
+	file, err := os.Open(filePath)
+
 	if err != nil {
+		if os.IsNotExist(err) {
+			err = CreateFile()
+			if err != nil {
+				return data, err
+			}
+		}
 		return data, err
 	}
 
-	for _, line := range strings.Split(string(fileData), "\n") {
-		if line == "" {
-			continue
-		}
-		data = append(data, models.Task{Name: line})
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&data); err != nil {
+		return data, err
 	}
+
 	return data, nil
 }
 
@@ -59,6 +68,11 @@ func deleteFile() error {
 }
 
 func WriteFile(todoList []models.Task) error {
+	err := CreateFile()
+	if err != nil {
+		return err
+	}
+
 	emptyTodoList := len(todoList) == 0
 	if emptyTodoList {
 		err := deleteFile()
@@ -68,22 +82,19 @@ func WriteFile(todoList []models.Task) error {
 		return nil
 	}
 
-	err := CreateFile()
+	file, err := os.Create(FilePath)
 	if err != nil {
 		return err
 	}
 
-	f, openFileError := os.OpenFile(FilePath, os.O_WRONLY, 0644)
-	if openFileError != nil {
-		return openFileError
+	defer file.Close()
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "	")
+
+	if err := encoder.Encode(todoList); err != nil {
+		return err
 	}
 
-	defer f.Close()
-	for _, todo := range todoList {
-		taskName := string(todo.Name)
-		if _, err := f.WriteString(taskName + "\n"); err != nil {
-			return err
-		}
-	}
+	log.Println("todoList saved to file: " + FilePath)
 	return nil
 }
