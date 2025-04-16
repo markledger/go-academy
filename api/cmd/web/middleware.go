@@ -9,25 +9,19 @@ import (
 
 const traceIdKey = "traceID"
 
-func contextMiddleware(ctx context.Context, next http.Handler) http.Handler {
+func ContextMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rctx, cancel := context.WithCancel(r.Context())
-		context.AfterFunc(ctx, cancel)
-		next.ServeHTTP(w, r.WithContext(rctx))
+
+		traceID := uuid.NewString()
+		fmt.Println("contextMiddleware traceId:", traceID)
+		requestContext := context.WithValue(r.Context(), traceIdKey, traceID)
+		next.ServeHTTP(w, r.WithContext(requestContext))
 	})
 }
 
-func traceIDMiddleware(next http.Handler) http.Handler {
+func LogTraceId(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		traceID := uuid.NewString()
-
-		traceIDHeader := r.Header[traceIdKey]
-		fmt.Println(traceIDHeader)
-		if traceIDHeader != nil && len(traceIDHeader) != 0 {
-			traceID = traceIDHeader[0]
-		}
-		w.Header().Add(traceIdKey, traceID)
-		r.WithContext(context.WithValue(r.Context(), traceIdKey, traceID))
-		next.ServeHTTP(w, r)
+		fmt.Println("THE TRACEID in log middleware:", r.Context().Value(traceIdKey))
+		next.ServeHTTP(w, r.WithContext(requestContext))
 	})
 }
