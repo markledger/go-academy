@@ -22,6 +22,6 @@ func ContextMiddleware(next http.Handler) http.Handler {
 func LogTraceId(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("THE TRACEID in log middleware:", r.Context().Value(traceIdKey))
-		next.ServeHTTP(w, r.WithContext(requestContext))
+		next.ServeHTTP(w, r)
 	})
 }

@@ -16,8 +16,11 @@ func routes(mux *http.ServeMux) http.Handler {
 	mux.HandleFunc("DELETE /task/{id}", handlers.DeleteTask)
 	mux.HandleFunc("PATCH /task/{id}", handlers.UpdateTask)
 
+	mux.HandleFunc("GET /about/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/about.html")
+	})
 	fileServer := http.FileServer(http.Dir("./static/"))
-	mux.Handle("/static/about", http.StripPrefix("/static", fileServer))
+	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
 
 	return mux
 }
