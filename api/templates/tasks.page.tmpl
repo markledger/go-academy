@@ -59,7 +59,7 @@
                   </thead>
                   <tbody>
                  {{ range . }}
-                        <tr>
+                        <tr id="row-id-{{.ID}}">
                           <th scope="row">{{ .ID }}</li></th>
                           <td>{{.Name}}</td>
                           <td><button class="deleteTask" data-id="{{.ID}}">Delete</button></td>
@@ -76,9 +76,21 @@
     deleteButtons = document.querySelectorAll("Button.deleteTask")
 
     deleteButtons.forEach(function(btn){
-        btn.addEventListener("click", (e) => {
+        btn.addEventListener("click", async(e) => {
             id = btn.getAttribute("data-id");
-            alert("wire up fetch call to DELETE api/task/"+id)
+            row = document.getElementById(`row-id-${id}`)
+            uri = `api/task/${id}`
+            try{
+            const response = await fetch(uri, {
+              method: "DELETE",
+            });
+
+            if( row){
+            row.remove()
+            }
+            }catch(error){
+                console.error(error.message)
+            }
         })
     })
 
