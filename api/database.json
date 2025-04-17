@@ -1,7 +1,7 @@
 [
 	{
 		"ID": 1,
-		"Name": "Remove the mines and add self replicators"
+		"Name": "Mine the wormhole"
 	},
 	{
 		"ID": 3,
@@ -14,5 +14,9 @@
 	{
 		"ID": 7,
 		"Name": "Engage at warp 9.95"
+	},
+	{
+		"ID": 8,
+		"Name": "Request further information"
 	}
 ]

@@ -45,69 +45,45 @@
 
     <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/about">About</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
-                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Rooms
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                        <a class="dropdown-item" href="/generals-quarters">General's Quarters</a>
-                        <a class="dropdown-item" href="/majors-suite">Major's Suite</a>
-                    </div>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/search-availability">Book Now</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/make-reservation">Make Reservation</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/contact">Contact</a>
-                </li>
-
-            </ul>
-        </div>
-    </nav>
-
     <div class="container">
         <div class="row">
             <div class="col">
-                <h1>This is the task list page</h1>
-
+                <h1>Stuff I'll never do</h1>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">task</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                 {{ range . }}
+                        <tr>
+                          <th scope="row">{{ .ID }}</li></th>
+                          <td>{{.Name}}</td>
+                          <td><button class="deleteTask" data-id="{{.ID}}">Delete</button></td>
+                        </tr>
+                     {{ end }}
+                  </tbody>
+                </table>
             </div>
         </div>
     </div>
 
 
-    <footer class="my-footer">
-        <div class="row">
-            <div class="col">
-                left
-            </div>
+<script>
+    deleteButtons = document.querySelectorAll("Button.deleteTask")
 
-            <div class="col">
-                center
-            </div>
+    deleteButtons.forEach(function(btn){
+        btn.addEventListener("click", (e) => {
+            id = btn.getAttribute("data-id");
+            alert("wire up fetch call to DELETE api/task/"+id)
+        })
+    })
 
-            <div class="col">
-                right
-            </div>
-        </div>
-    </footer>
+
+</script>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
             integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
