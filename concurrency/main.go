@@ -1,1 +1,5 @@
-package concurrency
+package main
+
+func main() {
+	StartActor()
+}

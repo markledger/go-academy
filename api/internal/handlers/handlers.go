@@ -3,6 +3,7 @@ package handlers
 import (
 	"api/internal/filestore"
 	"api/internal/models"
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -11,6 +12,52 @@ import (
 
 type jsonResponse struct {
 	Data []models.Task
+}
+type Request struct {
+	Ctx      context.Context
+	Action   string
+	Payload  any
+	Response chan any
+}
+
+var RequestQueue = make(chan Request)
+var ShutdownChan = make(chan struct{})
+
+func StartActor() {
+
+	go func() {
+		for {
+			select {
+			case request := <-RequestQueue:
+				log.Println("The request action:", request.Action)
+				switch request.Action {
+
+				case "GetTask":
+					id := request.Payload
+					taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
+					if err != nil {
+						log.Fatal(err)
+					}
+					var selectedTask models.Task
+					for _, task := range taskList {
+						if task.ID == id {
+							selectedTask = task
+							break
+						}
+					}
+					request.Response <- selectedTask
+
+				case "ListAllTasks":
+					todos, err := filestore.ParseFileToSlice(filestore.FilePath)
+					if err != nil {
+						log.Fatal("error loading todos")
+					}
+
+					request.Response <- todos
+				}
+			}
+		}
+	}()
 }
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {
@@ -49,21 +96,22 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 
 func ListAllTasks(w http.ResponseWriter, r *http.Request) {
 
-	taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	taskResponse := &jsonResponse{
-		Data: taskList,
+	response := make(chan any)
+
+	RequestQueue <- Request{
+		Action:   "ListAllTasks",
+		Payload:  nil,
+		Response: response,
 	}
 
-	out, err := json.MarshalIndent(taskResponse, "", "     ")
+	out := (<-response).([]models.Task)
+
+	responseData, err := json.MarshalIndent(out, "", "     ")
 	if err != nil {
 		log.Println(err)
 	}
-
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(out)
+	w.Write(responseData)
 }
 
 func GetTask(w http.ResponseWriter, r *http.Request) {
@@ -73,33 +121,26 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	response := make(chan any)
 
-	var taskResponse *jsonResponse
-	for _, task := range taskList {
-		if task.ID == id {
-			taskResponse = &jsonResponse{
-				Data: []models.Task{task},
-			}
-			break
-		}
+	RequestQueue <- Request{
+		Action:   "GetTask",
+		Payload:  id,
+		Response: response,
 	}
+	task := (<-response).(models.Task)
 
-	if taskResponse == nil {
+	if task.ID != id {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
-	out, err := json.MarshalIndent(taskResponse, "", "     ")
+	responseData, err := json.MarshalIndent(task, "", "     ")
 	if err != nil {
 		log.Println(err)
 	}
-
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(out)
+	w.Write(responseData)
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
