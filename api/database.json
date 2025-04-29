@@ -42,5 +42,17 @@
 	{
 		"ID": 18,
 		"Name": "Only drink 10 double espresso's per day"
+	},
+	{
+		"ID": 19,
+		"Name": "Must work hard on concurrency"
+	},
+	{
+		"ID": 20,
+		"Name": "Must work hard on concurrency"
+	},
+	{
+		"ID": 21,
+		"Name": "Keep going learning concurrency"
 	}
 ]

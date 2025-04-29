@@ -15,7 +15,12 @@ type jsonResponse struct {
 type Request struct {
 	Action   string
 	Request  *http.Request
-	Response chan []models.Task
+	Response chan Response
+}
+
+type Response struct {
+	Data  []models.Task
+	Error error
 }
 
 var RequestQueue = make(chan Request)
@@ -26,7 +31,7 @@ func StartActor() {
 		for {
 			select {
 			case request := <-RequestQueue:
-				log.Println("The request action:", request.Action)
+
 				switch request.Action {
 				case "CreateTask":
 					var taskResponse []models.Task
@@ -34,40 +39,48 @@ func StartActor() {
 
 					taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
 					if err != nil {
-						log.Fatal(err)
+						log.Println(err)
+						response := Response{Data: taskResponse, Error: err}
+						request.Response <- response
+						return
 					}
 
 					task.ID = taskList[len(taskList)-1].ID + 1
 					taskList = append(taskList, task)
 					err = filestore.WriteFile(taskList)
+
 					if err != nil {
-						log.Fatal(err)
+						log.Println(err)
+						response := Response{Data: taskResponse, Error: err}
+						request.Response <- response
+						return
 					}
 					taskResponse = append(taskResponse, task)
-					request.Response <- taskResponse
+					response := Response{Data: taskResponse, Error: nil}
+					request.Response <- response
 
 				case "GetTask":
-					id, err := extractIdRouteParam(request.Request)
-					taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
-					if err != nil {
-						log.Fatal(err)
-					}
-					var selectedTask []models.Task
-					for _, task := range taskList {
-						if task.ID == id {
-							selectedTask = append(selectedTask, task)
-							break
-						}
-					}
-					request.Response <- selectedTask
+					//id, err := extractIdRouteParam(request.Request)
+					//taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
+					//if err != nil {
+					//	log.Fatal(err)
+					//}
+					//var selectedTask []models.Task
+					//for _, task := range taskList {
+					//	if task.ID == id {
+					//		selectedTask = append(selectedTask, task)
+					//		break
+					//	}
+					//}
+					//request.Response <- selectedTask
 
 				case "ListAllTasks":
-					todos, err := filestore.ParseFileToSlice(filestore.FilePath)
-					if err != nil {
-						log.Fatal("error loading todos")
-					}
-
-					request.Response <- todos
+					//todos, err := filestore.ParseFileToSlice(filestore.FilePath)
+					//if err != nil {
+					//	log.Fatal("error loading todos")
+					//}
+					//
+					//request.Response <- todos
 				}
 			}
 		}
@@ -76,7 +89,7 @@ func StartActor() {
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {
 
-	response := make(chan []models.Task)
+	response := make(chan Response)
 
 	RequestQueue <- Request{
 		Action:   "CreateTask",
@@ -84,9 +97,15 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	responseData := <-response
+	taskResponse := <-response
 
-	data, err := json.MarshalIndent(responseData, "", "     ")
+	if taskResponse.Error != nil {
+		log.Println(taskResponse.Error)
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	data, err := json.MarshalIndent(taskResponse.Data, "", "     ")
 	if err != nil {
 		log.Println(err)
 	}
@@ -97,47 +116,47 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func ListAllTasks(w http.ResponseWriter, r *http.Request) {
-
-	response := make(chan []models.Task)
-
-	RequestQueue <- Request{
-		Action:   "ListAllTasks",
-		Request:  r,
-		Response: response,
-	}
-
-	responseData := <-response
-
-	data, err := json.MarshalIndent(responseData, "", "     ")
-	if err != nil {
-		log.Println(err)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
+	//
+	//response := make(chan []models.Task)
+	//
+	//RequestQueue <- Request{
+	//	Action:   "ListAllTasks",
+	//	Request:  r,
+	//	Response: response,
+	//}
+	//
+	//responseData := <-response
+	//
+	//data, err := json.MarshalIndent(responseData, "", "     ")
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//w.Header().Set("Content-Type", "application/json")
+	//w.Write(data)
 }
 
 func GetTask(w http.ResponseWriter, r *http.Request) {
 
-	response := make(chan []models.Task)
+	//response := make(chan []models.Task)
+	//
+	//RequestQueue <- Request{
+	//	Action:   "GetTask",
+	//	Request:  r,
+	//	Response: response,
+	//}
+	//responseData := <-response
+	//
+	//if len(responseData) != 1 {
+	//	w.WriteHeader(http.StatusNoContent)
+	//	return
+	//}
 
-	RequestQueue <- Request{
-		Action:   "GetTask",
-		Request:  r,
-		Response: response,
-	}
-	responseData := <-response
-
-	if len(responseData) != 1 {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	data, err := json.MarshalIndent(responseData, "", "     ")
-	if err != nil {
-		log.Println(err)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
+	//data, err := json.MarshalIndent(responseData, "", "     ")
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//w.Header().Set("Content-Type", "application/json")
+	//w.Write(data)
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
@@ -218,6 +237,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(out)
 }
+
 func extractBody(r *http.Request) (models.Task, error) {
 	decoder := json.NewDecoder(r.Body)
 	var task models.Task
