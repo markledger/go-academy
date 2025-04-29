@@ -17,7 +17,7 @@ type Request struct {
 	Ctx      context.Context
 	Action   string
 	Payload  any
-	Response chan any
+	Response chan []models.Task
 }
 
 var RequestQueue = make(chan Request)
@@ -38,10 +38,10 @@ func StartActor() {
 					if err != nil {
 						log.Fatal(err)
 					}
-					var selectedTask models.Task
+					var selectedTask []models.Task
 					for _, task := range taskList {
 						if task.ID == id {
-							selectedTask = task
+							selectedTask = append(selectedTask, task)
 							break
 						}
 					}
@@ -96,7 +96,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 
 func ListAllTasks(w http.ResponseWriter, r *http.Request) {
 
-	response := make(chan any)
+	response := make(chan []models.Task)
 
 	RequestQueue <- Request{
 		Action:   "ListAllTasks",
@@ -104,7 +104,7 @@ func ListAllTasks(w http.ResponseWriter, r *http.Request) {
 		Response: response,
 	}
 
-	out := (<-response).([]models.Task)
+	out := <-response
 
 	responseData, err := json.MarshalIndent(out, "", "     ")
 	if err != nil {
@@ -121,16 +121,16 @@ func GetTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := make(chan any)
+	response := make(chan []models.Task)
 
 	RequestQueue <- Request{
 		Action:   "GetTask",
 		Payload:  id,
 		Response: response,
 	}
-	task := (<-response).(models.Task)
+	task := <-response
 
-	if task.ID != id {
+	if task[0].ID != id {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
