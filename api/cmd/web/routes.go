@@ -12,7 +12,7 @@ func routes(mux *http.ServeMux) http.Handler {
 
 	mux.HandleFunc("GET /list-tasks", handlers.FrontendTasks)
 	mux.HandleFunc("GET /api/tasks", handlers.ListAllTasks)
-	mux.HandleFunc("POST /api/task", handlers.CreateTask)
+	mux.HandleFunc("POST /api/task", handlers.CreateTaskHandler)
 	mux.HandleFunc("GET /api/task/{id}", handlers.GetTask)
 	mux.HandleFunc("DELETE /api/task/{id}", handlers.DeleteTask)
 	mux.HandleFunc("PATCH /api/task/{id}", handlers.UpdateTask)

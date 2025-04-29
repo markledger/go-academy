@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"api/internal/actors"
 	"api/internal/filestore"
 	"api/internal/models"
 	"encoding/json"
@@ -12,31 +13,17 @@ import (
 type jsonResponse struct {
 	Data []models.Task
 }
-type RequestStruct struct {
-	Action   string
-	Request  *http.Request
-	Response chan ResponseStruct
-}
-
-type ResponseStruct struct {
-	Data  []models.Task
-	Error error
-}
-
-var RequestQueue = make(chan RequestStruct)
 
 func StartActor() {
 
 	go func() {
 		for {
 			select {
-			case request := <-RequestQueue:
+			case request := <-actors.RequestQueue:
 
 				switch request.Action {
 				case "CreateTask":
-
-					request.Response <- createTaskAction(request.Request)
-
+					request.Response <- actors.CreateTaskActor(request.Task)
 				case "GetTask":
 					//id, err := extractIdRouteParam(request.Request)
 					//taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
@@ -65,36 +52,23 @@ func StartActor() {
 	}()
 }
 
-func createTaskAction(r *http.Request) ResponseStruct {
-	var taskResponse []models.Task
+func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	task, err := extractBody(r)
 
-	taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
+	// Oliver... Is it safe to respond here if there
+	// is an error? I would also like to include validation
+	// at this point so I'm not putting duff data on the channel
+	// but this, I fear is removing responsibility from the actor
 	if err != nil {
-		log.Println(err)
-		return ResponseStruct{Data: taskResponse, Error: err}
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
 	}
 
-	task.ID = taskList[len(taskList)-1].ID + 1
-	taskList = append(taskList, task)
-	err = filestore.WriteFile(taskList)
+	response := make(chan actors.ResponseStruct)
 
-	if err != nil {
-		log.Println(err)
-		return ResponseStruct{Data: taskResponse, Error: err}
-
-	}
-	taskResponse = append(taskResponse, task)
-	return ResponseStruct{Data: taskResponse, Error: nil}
-}
-
-func CreateTask(w http.ResponseWriter, r *http.Request) {
-
-	response := make(chan ResponseStruct)
-
-	RequestQueue <- RequestStruct{
+	actors.RequestQueue <- actors.RequestStruct{
 		Action:   "CreateTask",
-		Request:  r,
+		Task:     task,
 		Response: response,
 	}
 
