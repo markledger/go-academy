@@ -20,32 +20,13 @@ func StartActor() {
 		for {
 			select {
 			case request := <-actors.RequestQueue:
-
 				switch request.Action {
 				case "CreateTask":
 					request.Response <- actors.CreateTaskActor(request.Task)
 				case "GetTask":
-					//id, err := extractIdRouteParam(request.Request)
-					//taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
-					//if err != nil {
-					//	log.Fatal(err)
-					//}
-					//var selectedTask []models.Task
-					//for _, task := range taskList {
-					//	if task.ID == id {
-					//		selectedTask = append(selectedTask, task)
-					//		break
-					//	}
-					//}
-					//request.Response <- selectedTask
-
+					request.Response <- actors.GetTask(request.Task)
 				case "ListAllTasks":
-					//todos, err := filestore.ParseFileToSlice(filestore.FilePath)
-					//if err != nil {
-					//	log.Fatal("error loading todos")
-					//}
-					//
-					//request.Response <- todos
+					request.Response <- actors.ListAllTasks()
 				}
 			}
 		}
@@ -92,47 +73,47 @@ func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ListAllTasks(w http.ResponseWriter, r *http.Request) {
-	//
-	//response := make(chan []models.Task)
-	//
-	//RequestQueue <- Request{
-	//	Action:   "ListAllTasks",
-	//	Request:  r,
-	//	Response: response,
-	//}
-	//
-	//responseData := <-response
-	//
-	//data, err := json.MarshalIndent(responseData, "", "     ")
-	//if err != nil {
-	//	log.Println(err)
-	//}
-	//w.Header().Set("Content-Type", "application/json")
-	//w.Write(data)
+
+	response := make(chan actors.ResponseStruct)
+
+	actors.RequestQueue <- actors.RequestStruct{
+		Action:   "ListAllTasks",
+		Task:     models.Task{},
+		Response: response,
+	}
+
+	responseData := <-response
+
+	data, err := json.MarshalIndent(responseData, "", "     ")
+	if err != nil {
+		log.Println(err)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 }
 
 func GetTask(w http.ResponseWriter, r *http.Request) {
+	id, err := extractIdRouteParam(r)
+	response := make(chan actors.ResponseStruct)
 
-	//response := make(chan []models.Task)
-	//
-	//RequestQueue <- Request{
-	//	Action:   "GetTask",
-	//	Request:  r,
-	//	Response: response,
-	//}
-	//responseData := <-response
-	//
-	//if len(responseData) != 1 {
-	//	w.WriteHeader(http.StatusNoContent)
-	//	return
-	//}
+	actors.RequestQueue <- actors.RequestStruct{
+		Action:   "GetTask",
+		Task:     models.Task{ID: id},
+		Response: response,
+	}
+	responseData := <-response
 
-	//data, err := json.MarshalIndent(responseData, "", "     ")
-	//if err != nil {
-	//	log.Println(err)
-	//}
-	//w.Header().Set("Content-Type", "application/json")
-	//w.Write(data)
+	if responseData.Error != nil {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	data, err := json.MarshalIndent(responseData.Data, "", "     ")
+	if err != nil {
+		log.Println(err)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data)
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
