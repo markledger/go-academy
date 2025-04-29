@@ -26,5 +26,21 @@
 	{
 		"ID": 14,
 		"Name": "Only drink 3000 double espresso's per day"
+	},
+	{
+		"ID": 15,
+		"Name": "Only drink 99999000 double espresso's per day"
+	},
+	{
+		"ID": 16,
+		"Name": "Only drink 1 double espresso's per day"
+	},
+	{
+		"ID": 17,
+		"Name": "Only drink 10 double espresso's per day"
+	},
+	{
+		"ID": 18,
+		"Name": "Only drink 10 double espresso's per day"
 	}
 ]

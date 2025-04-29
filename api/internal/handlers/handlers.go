@@ -3,7 +3,6 @@ package handlers
 import (
 	"api/internal/filestore"
 	"api/internal/models"
-	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -14,14 +13,12 @@ type jsonResponse struct {
 	Data []models.Task
 }
 type Request struct {
-	Ctx      context.Context
 	Action   string
-	Payload  any
+	Request  *http.Request
 	Response chan []models.Task
 }
 
 var RequestQueue = make(chan Request)
-var ShutdownChan = make(chan struct{})
 
 func StartActor() {
 
@@ -31,9 +28,26 @@ func StartActor() {
 			case request := <-RequestQueue:
 				log.Println("The request action:", request.Action)
 				switch request.Action {
+				case "CreateTask":
+					var taskResponse []models.Task
+					task, err := extractBody(request.Request)
+
+					taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					task.ID = taskList[len(taskList)-1].ID + 1
+					taskList = append(taskList, task)
+					err = filestore.WriteFile(taskList)
+					if err != nil {
+						log.Fatal(err)
+					}
+					taskResponse = append(taskResponse, task)
+					request.Response <- taskResponse
 
 				case "GetTask":
-					id := request.Payload
+					id, err := extractIdRouteParam(request.Request)
 					taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
 					if err != nil {
 						log.Fatal(err)
@@ -61,37 +75,25 @@ func StartActor() {
 }
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {
-	task, err := extractBody(w, r)
-	if err != nil {
-		log.Printf("err converting ID to integer: %+v\n", err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
+
+	response := make(chan []models.Task)
+
+	RequestQueue <- Request{
+		Action:   "CreateTask",
+		Request:  r,
+		Response: response,
 	}
 
-	taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	responseData := <-response
 
-	task.ID = taskList[len(taskList)-1].ID + 1
-	taskList = append(taskList, task)
-	err = filestore.WriteFile(taskList)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	taskResponse := &jsonResponse{
-		Data: []models.Task{task},
-	}
-
-	out, err := json.MarshalIndent(taskResponse, "", "     ")
+	data, err := json.MarshalIndent(responseData, "", "     ")
 	if err != nil {
 		log.Println(err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	w.Write(out)
+	w.Write(data)
 }
 
 func ListAllTasks(w http.ResponseWriter, r *http.Request) {
@@ -100,51 +102,46 @@ func ListAllTasks(w http.ResponseWriter, r *http.Request) {
 
 	RequestQueue <- Request{
 		Action:   "ListAllTasks",
-		Payload:  nil,
+		Request:  r,
 		Response: response,
 	}
 
-	out := <-response
+	responseData := <-response
 
-	responseData, err := json.MarshalIndent(out, "", "     ")
+	data, err := json.MarshalIndent(responseData, "", "     ")
 	if err != nil {
 		log.Println(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseData)
+	w.Write(data)
 }
 
 func GetTask(w http.ResponseWriter, r *http.Request) {
-	id, err := extractIdRouteParam(w, r)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 
 	response := make(chan []models.Task)
 
 	RequestQueue <- Request{
 		Action:   "GetTask",
-		Payload:  id,
+		Request:  r,
 		Response: response,
 	}
-	task := <-response
+	responseData := <-response
 
-	if task[0].ID != id {
+	if len(responseData) != 1 {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
-	responseData, err := json.MarshalIndent(task, "", "     ")
+	data, err := json.MarshalIndent(responseData, "", "     ")
 	if err != nil {
 		log.Println(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseData)
+	w.Write(data)
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
-	id, err := extractIdRouteParam(w, r)
+	id, err := extractIdRouteParam(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -177,13 +174,13 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 
 func UpdateTask(w http.ResponseWriter, r *http.Request) {
 
-	id, err := extractIdRouteParam(w, r)
+	id, err := extractIdRouteParam(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	patchedTask, err := extractBody(w, r)
+	patchedTask, err := extractBody(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -221,7 +218,7 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(out)
 }
-func extractBody(w http.ResponseWriter, r *http.Request) (models.Task, error) {
+func extractBody(r *http.Request) (models.Task, error) {
 	decoder := json.NewDecoder(r.Body)
 	var task models.Task
 	error := decoder.Decode(&task)
@@ -231,7 +228,7 @@ func extractBody(w http.ResponseWriter, r *http.Request) (models.Task, error) {
 	return task, nil
 }
 
-func extractIdRouteParam(w http.ResponseWriter, r *http.Request) (int, error) {
+func extractIdRouteParam(r *http.Request) (int, error) {
 	idString := r.PathValue("id")
 	return strconv.Atoi(idString)
 }
