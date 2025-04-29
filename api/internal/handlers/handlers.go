@@ -12,18 +12,18 @@ import (
 type jsonResponse struct {
 	Data []models.Task
 }
-type Request struct {
+type RequestStruct struct {
 	Action   string
 	Request  *http.Request
-	Response chan Response
+	Response chan ResponseStruct
 }
 
-type Response struct {
+type ResponseStruct struct {
 	Data  []models.Task
 	Error error
 }
 
-var RequestQueue = make(chan Request)
+var RequestQueue = make(chan RequestStruct)
 
 func StartActor() {
 
@@ -34,30 +34,8 @@ func StartActor() {
 
 				switch request.Action {
 				case "CreateTask":
-					var taskResponse []models.Task
-					task, err := extractBody(request.Request)
 
-					taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
-					if err != nil {
-						log.Println(err)
-						response := Response{Data: taskResponse, Error: err}
-						request.Response <- response
-						return
-					}
-
-					task.ID = taskList[len(taskList)-1].ID + 1
-					taskList = append(taskList, task)
-					err = filestore.WriteFile(taskList)
-
-					if err != nil {
-						log.Println(err)
-						response := Response{Data: taskResponse, Error: err}
-						request.Response <- response
-						return
-					}
-					taskResponse = append(taskResponse, task)
-					response := Response{Data: taskResponse, Error: nil}
-					request.Response <- response
+					request.Response <- createTaskAction(request.Request)
 
 				case "GetTask":
 					//id, err := extractIdRouteParam(request.Request)
@@ -87,11 +65,34 @@ func StartActor() {
 	}()
 }
 
+func createTaskAction(r *http.Request) ResponseStruct {
+	var taskResponse []models.Task
+	task, err := extractBody(r)
+
+	taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
+	if err != nil {
+		log.Println(err)
+		return ResponseStruct{Data: taskResponse, Error: err}
+	}
+
+	task.ID = taskList[len(taskList)-1].ID + 1
+	taskList = append(taskList, task)
+	err = filestore.WriteFile(taskList)
+
+	if err != nil {
+		log.Println(err)
+		return ResponseStruct{Data: taskResponse, Error: err}
+
+	}
+	taskResponse = append(taskResponse, task)
+	return ResponseStruct{Data: taskResponse, Error: nil}
+}
+
 func CreateTask(w http.ResponseWriter, r *http.Request) {
 
-	response := make(chan Response)
+	response := make(chan ResponseStruct)
 
-	RequestQueue <- Request{
+	RequestQueue <- RequestStruct{
 		Action:   "CreateTask",
 		Request:  r,
 		Response: response,
@@ -108,6 +109,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 	data, err := json.MarshalIndent(taskResponse.Data, "", "     ")
 	if err != nil {
 		log.Println(err)
+		//handle this error for the user
 	}
 
 	w.Header().Set("Content-Type", "application/json")
