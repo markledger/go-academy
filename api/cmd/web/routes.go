@@ -11,11 +11,11 @@ import (
 func routes(mux *http.ServeMux) http.Handler {
 
 	mux.HandleFunc("GET /list-tasks", handlers.FrontendTasks)
-	mux.HandleFunc("GET /api/tasks", handlers.ListAllTasks)
+	mux.HandleFunc("GET /api/tasks", handlers.ListAllTasksHandler)
 	mux.HandleFunc("POST /api/task", handlers.CreateTaskHandler)
-	mux.HandleFunc("GET /api/task/{id}", handlers.GetTask)
-	mux.HandleFunc("DELETE /api/task/{id}", handlers.DeleteTask)
-	mux.HandleFunc("PATCH /api/task/{id}", handlers.UpdateTask)
+	mux.HandleFunc("GET /api/task/{id}", handlers.GetTaskHandler)
+	mux.HandleFunc("DELETE /api/task/{id}", handlers.DeleteTaskHandler)
+	mux.HandleFunc("PATCH /api/task/{id}", handlers.UpdateTaskHandler)
 
 	mux.HandleFunc("GET /about/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./static/about.html")

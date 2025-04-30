@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func CreateTaskActor(task models.Task) ResponseStruct {
+func CreateTask(task models.Task) ResponseStruct {
 	var taskResponse []models.Task
 
 	taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
