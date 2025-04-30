@@ -27,6 +27,8 @@ func StartActor() {
 					request.Response <- actors.GetTask(request.Task)
 				case "ListAllTasks":
 					request.Response <- actors.ListAllTasks()
+				case "DeleteTask":
+					request.Response <- actors.DeleteTask(request.Task)
 				}
 			}
 		}
@@ -123,22 +125,17 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskList, err := filestore.ParseFileToSlice(filestore.FilePath)
-	if err != nil {
-		log.Fatal(err)
+	response := make(chan actors.ResponseStruct)
+
+	actors.RequestQueue <- actors.RequestStruct{
+		Action:   "DeleteTask",
+		Task:     models.Task{ID: id},
+		Response: response,
 	}
 
-	var updatedTaskList []models.Task
+	responseData := <-response
 
-	for _, task := range taskList {
-		if task.ID == id {
-			continue
-		}
-		updatedTaskList = append(updatedTaskList, task)
-	}
-
-	err = filestore.WriteFile(updatedTaskList)
-	if err != nil {
+	if responseData.Error != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
